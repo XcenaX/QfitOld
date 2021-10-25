@@ -1,0 +1,49 @@
+{%load static%}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="{%static 'js/jquery.min.js'%}"></script>
+    <link rel="stylesheet" type="text/css" href="{%static 'css/alertify/alertify.min.css'%}">
+    <link rel="stylesheet" type="text/css" href="{%static 'css/alertify/themes/default.min.css'%}">
+    <link rel="shortcut icon" href="{%static 'img/logo.png'%}" type="image/x-icon">
+    <link rel="stylesheet" href="{%static 'css/root.css'%}">
+    <script src="{%static 'js/alertify.js'%}"></script>
+    
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <title>Qfit Admin</title>
+    <link rel="stylesheet" href="{%static 'bootstrap/css/bootstrap.min.css'%}" />
+    <link rel="stylesheet" href="{%static 'css/sidebar.css'%}" />
+    <link rel="stylesheet" href="{%static 'css/login.css'%}" />
+</head>
+<body>
+    <div class="bg_image1"></div>
+    <div class="bg_image2" style="left:-10%"></div>
+    <div class="login-wrap">
+        <div class="login-form">
+            <div class="form-logo"></div>
+            <form action="{%url 'adminpanel:login'%}" method="POST" autocomplete="chrome-off">{%csrf_token%}
+                <div class="login-title">Вход</div>
+                <input autocomplete="chrome-off" type="text" name="username" value="" placeholder="Имя пользователя">
+                <input autocomplete="chrome-off" type="password" name="password" value="" placeholder="Пароль">
+                <button type="submit" class="login-button">Войти</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
+
+
+
+<!-- <form action="{%url 'adminpanel:register'%}" method="POST">{%csrf_token%}
+    <input type="text" name="username" placeholder="Имя пользователя">
+    <input type="password" name="password" placeholder="Пароль">
+    <select name="company" id="">
+        {%for company in companies%}
+            <option value="{{company.id}}">{{company.name}}</option>
+        {%endfor%}
+    </select>
+    <button type="submit">Регистрация</button>
+</form> -->

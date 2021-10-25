@@ -1,0 +1,94 @@
+{% load static %}
+
+{% block links %}
+
+    <head>
+        <script src="{%static 'js/jquery.min.js'%}"></script>
+        <link rel="stylesheet" type="text/css" href="{%static 'css/alertify/alertify.min.css'%}">
+        <link rel="stylesheet" type="text/css" href="{%static 'css/alertify/themes/default.min.css'%}">
+        <link rel="shortcut icon" href="{%static 'img/logo.png'%}" type="image/x-icon">
+        <link rel="stylesheet" href="{%static 'css/root.css'%}">
+        <script src="{%static 'js/alertify.js'%}"></script>
+        <script src="{%static 'js/functions.js'%}"></script>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        
+		<title>Qfit Admin</title>
+        <link rel="stylesheet" href="{%static 'bootstrap/css/bootstrap.min.css'%}" />
+        <link rel="stylesheet" href="{%static 'css/sidebar.css'%}" />
+        
+        <style>
+            html{
+                max-width: 1920px;
+                min-width: 1240px;
+                margin: auto;
+            }
+        </style>
+        {% block styles %}
+
+        {% endblock %}
+    </head>
+{% endblock %}
+
+
+
+{% block body%}
+    <div class="mobile-alert">
+        <div class="mobile-title">Версия для телефона не доступна!</div>
+    </div>
+    <body>
+
+       
+        <div class="bg_image1 hide-on-mobile"></div>
+        <div class="bg_image2 hide-on-mobile"></div>
+        <div class="sidebar hide-on-mobile">
+                <div class="logo"></div>
+                <div class="sidebar-option-menu">
+                    <div class="sidebar-option {%block main%}{%endblock%}">
+                        <a href="{%url 'adminpanel:index'%}">Главная</a>
+                    </div>
+                    <div class="sidebar-option {%block book%}{%endblock%}">
+                        <a href="{%url 'adminpanel:book'%}">Брони</a>
+                    </div>
+                    <div class="sidebar-option {%block services%}{%endblock%}">
+                        <a href="{%url 'adminpanel:services'%}">Список услуг и графики</a>
+                    </div>
+                    <div class="sidebar-option {%block history%}{%endblock%}">
+                        <a href="{%url 'adminpanel:history'%}">История</a>
+                    </div>
+                    <div class="sidebar-option {%block support%}{%endblock%}">
+                        <a href="{%url 'adminpanel:support'%}">Помощь и связь</a>
+                    </div>
+                    <div class="sidebar-option bottom">
+                        <form action="{%url 'adminpanel:logout'%}" method="POST">{%csrf_token%}
+                            <button type="submit">Выйти</button>    
+                        </form>
+                    </div>
+                </div>
+                
+        </div>
+        <div class="content hide-on-mobile">
+            <div class="header">
+                <div class="user-block">
+                    <div class="user-block-title-block">
+                        <div class="up">{{current_user.username}}</div>
+                        <!-- <div class="down">Настройки</div> -->
+                    </div>
+                    <img class="user-block-image-block" src="{%static 'img/user.svg'%}"/>
+                        
+                    
+                </div>
+            </div>
+            {%block content%}
+        
+            {%endblock%}
+        </div>
+            
+       
+   </body>
+{% endblock %}
+
+
+{%block scripts%}
+{%endblock%}

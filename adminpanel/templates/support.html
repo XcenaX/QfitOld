@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+{% load static %}
+
+{%block styles %}
+    <link rel="stylesheet" href="{%static 'css/support.css'%}">
+{% endblock %}
+
+{%block support%}active{%endblock%}
+
+{% block content %}
+	
+        <div class="wrap">
+            <div class="question-form">
+                <div class="content-title">
+                    Помощь и связь
+                </div>
+                <textarea cols="10" rows="10" class="question" placeholder="Введите ваш вопрос и мы ответим вам на почту как можно скорее! Или закажите бесплатный звонок ниже."></textarea>
+                <button class="question-button send">Отправить</button>
+                <button class="question-button call">Позвони мне!</button>
+
+                <div class="content-title" style="margin-top: 50px; font-size: 50px;">
+                    Наши контакты
+                </div>
+                <div class="content-title-under">
+                    blablabla@mail.ru
+                </div>
+                <div class="content-title-under">
+                    blablabla@mail.ru
+                </div>
+                <div class="content-title-under" style="margin-bottom: 50px;">
+                    blablabla@mail.ru
+                </div>
+            </div>
+        </div>
+    
+    
+{% endblock %}
+
+{%block scripts%}
+    <script language="javascript">
+        function drop(id){
+            arrow = $("#arrow"+id)[0];
+            if(arrow.style.backgroundImage == "" || arrow.style.backgroundImage == 'url("/static/img/down-arrow.svg")'){
+                arrow.style.backgroundImage = 'url("/static/img/up-arrow.svg")';
+                $("#under"+id)[0].style.display = "block";
+                $("#service"+id)[0].style.height = "480px";    
+            } else{
+                arrow.style.backgroundImage = 'url("/static/img/down-arrow.svg")';
+                $("#under"+id)[0].style.display = "none";
+                $("#service"+id)[0].style.height = "70px";
+            }
+            
+        }
+
+        function get_day_of_week(number){
+            if(number == 6)return 0;
+            if(number == 5)return 1;
+            if(number == 4)return 2;
+            if(number == 3)return 3;
+            if(number == 2)return 4;
+            if(number == 1)return 5;
+            if(number == 0)return 6;
+        }
+
+        function edit(id){
+            blocks = $(".day-of-week-down.day"+id);
+            places = $(".place"+id);
+            service_name = $("#name"+id)[0];
+            price = $("#price"+id)[0];
+            description = $("#description"+id)[0];
+            edit_button = $("#edit"+id)[0];
+            if(blocks[0].disabled == true){
+                edit_button.style.backgroundImage = 'url("/static/img/save.svg")';
+                edit_button.title = "Сохранить";
+                for(var i = 0; i < blocks.length; i++){
+                    blocks[i].disabled = false;   
+                }    
+                for(var i = 0; i < places.length; i++){
+                    places[i].disabled = false;
+                }
+                service_name.disabled=false;
+                description.disabled=false;
+                price.disabled=false;
+            } else{
+                edit_button.style.backgroundImage = 'url("/static/img/draw.svg")';
+                edit_button.title = "Редактировать";
+                for(var i = 0; i < blocks.length; i++){
+                    blocks[i].disabled = true;  
+                }    
+                for(var i = 0; i < places.length; i++){
+                    places[i].disabled = true; 
+                }
+                service_name.disabled=true;
+                description.disabled=true;
+                price.disabled=true;
+                days = $(".day-block2");
+                udpated = [];
+                for(var i = 0; i < places.length; i++){
+                    start_time = days[i].children[1].value;
+                    end_time = days[i].children[2].value;
+                    day_of_week = get_day_of_week(i);
+                    limit_people = parseInt(places[i].value);
+    
+                    udpated.push({
+                        "start_time": start_time,
+                        "end_time": end_time,
+                        "day": day_of_week,
+                        "limit_people": limit_people,
+                    })
+                }
+
+                $.ajax({
+                    url: "/api/update_schedules/", 
+                    type: "POST",
+                    data: {"days":JSON.stringify(udpated), "service": id, "name": service_name.value, "description": description.value, "price": price.value}
+                });
+
+                alertify.success("Изменения сохранены!", 4);
+            } 
+            
+        }
+
+        function remove(id){
+            service_block = $("#service"+id)[0];
+            service_block.remove();
+            $.ajax({
+                url: "/api/services/"+id+"/", 
+                type: "DELETE",
+                
+            });
+            alertify.success("Услуга удалена!", 4);
+        }
+
+        function add_service(){
+            $.ajax({
+                url: "/api/services/", 
+                type: "POST",
+                data: {
+                    "name": "Новая услуга",
+                    "price": 0,
+                    "description": "Описание",
+                }
+            });
+            alertify.success("Услуга добавлена!", 4);
+        }
+    //237px
+    </script>
+
+    
+{%endblock%}
+

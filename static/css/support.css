@@ -1,0 +1,55 @@
+.question-form{
+    width: 70%;
+}
+
+.content-title-under{
+    font-family: Montserrat;
+    font-style: normal;
+    font-weight: 600;
+    font-size: 20px;
+    line-height: 40px;
+    color: #570499;
+    margin-top: 20px;
+}
+
+.question-button, .question-button:focus{
+    width: 35%;
+    margin: auto;
+    padding: 10px;
+    color: white;
+    box-shadow: 0px 4px 12px rgb(0 0 0 / 20%);
+    font-family: Montserrat;
+    font-style: normal;
+    font-weight: 600;
+    font-size: 25px;
+    line-height: 40px;
+    border: none;
+    border-radius: 25px;
+    outline: none;
+}
+
+.send{
+    background: #570499;
+}
+
+.call{
+    background: #C95C4D;
+    margin-left: 10%;
+}
+
+.question, .question:focus{
+    width: 80%;
+    height: 300px;
+    background: #FFFFFF;
+    box-shadow: 0px 4px 12px rgb(0 0 0 / 20%);
+    border: none;
+    resize: none;
+    border-radius: 25px;
+    padding: 20px;
+    margin: 60px;
+    margin-left: 0px;
+    margin-bottom: 20px;
+    color: #B7B7B7;
+    outline: none;
+    font-size: 20px;
+}

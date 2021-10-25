@@ -1,0 +1,31 @@
+version: '3'
+
+services:
+  redis:
+    image: redis
+    command: redis-server
+    ports:
+      - '6379:6379'
+  web:
+    build: ./qfit
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./qfit:/qfit
+    ports:
+      - "8000:8000"
+  worker_channels:
+    build: ./qfit
+    command: python manage.py runworker
+    volumes:
+      - ./qfit:/qfit
+    links:
+      - redis
+  channels:
+    build: ./qfit
+    command: daphne -b 0.0.0.0 -p 8001 qfit.asgi:channel_layer
+    volumes:
+      - ./qfit:/qfit
+    ports:
+      - "8001:8001"
+    links:
+      - redis

@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% load static %}
+
+{%block styles %}
+    
+{% endblock %}
+
+{%block history%}active{%endblock%}
+
+{% block content %}
+	
+        <div class="wrap">
+            <div class="content-title">
+                История посещений
+            </div>
+            <div class="content-under-title">
+                {{company.name}}
+            </div>
+            <div class="scrollable">
+                <table id="table">
+                    <tr class="head">
+                    <th>Телефон</th>
+                    <th>Услуга</th>
+                    <th>Время старта</th>
+                    <th>Время окончания</th>
+                    <th>Кол-во минут</th>
+                    <th>Оплата</th>
+                    </tr>
+                    {%if not histories%}
+                        <tr>
+                            <td colspan="6" id="empty_tr">В данный момент никто не посещал занятия</td>
+                        </tr>
+                    {%endif%}
+                    {%for history in histories%}
+                        <tr id="history{{history.id}}">
+                            <td>{{history.user.phone}}</td>
+                            <td>{{history.service.category.name}}</td>
+                            <td>{{history.start_time|date:'Y-m-d H:i'}}</td>
+                            <td>{{history.end_time|date:'Y-m-d H:i'}}</td>
+                            <td>{{history.minutes}} минуты</td>
+                            <td>{{history.bill}} тг</td>
+                        </tr>
+                    {%endfor%}
+                </table>
+            </div>
+        </div>
+    
+    
+{% endblock %}
+
+{%block scripts%}
+    <script language="javascript">
+        var ws_url = 'wss://' + window.location.host + '/ws/timers/';
+        var ticksSocket = new WebSocket(ws_url);
+
+        ticksSocket.onmessage = function(event) {
+            var data = JSON.parse(event.data);
+            if({{current_user.company.id}} == data["company_id"]){
+                if(data["new_history"] != null){
+                    trs = $("tr");
+                    empty_tr = $("#empty_tr")[0];
+                    if(trs.length == 2 && empty_tr != null){
+                        trs[1].remove();
+                    }
+                    const tr = document.createElement('tr');
+
+                    tr.id = 'history' + data["history_id"];
+                    tr.innerHTML = `
+
+                    <td>`+data["phone"]+`</td>
+                    <td>`+data["service"]+`</td>
+                    <td>`+data["start_time"].slice(0, -3)+`</td>
+                    <td>`+data["end_time"].slice(0, -3)+`</td>
+                    <td>`+data["minutes"]+` минуты</td>
+                    <td>`+data["bill"]+` тг</td>
+                    `;
+
+                    document.getElementById('table').appendChild(tr);
+                }
+            }
+           
+            // do whatever required with received data ...
+        };
+        ticksSocket.onerror = function(event) {
+            var data = JSON.parse(event.data);
+            console.log('data', data);
+            
+        };
+    </script>
+{%endblock%}
+

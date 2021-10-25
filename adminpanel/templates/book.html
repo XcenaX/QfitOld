@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+{% load static %}
+
+{%block styles %}
+    <link rel="stylesheet" href="{%static 'css/book.css'%}">
+{% endblock %}
+
+{%block book%}active{%endblock%}
+
+{% block content %}
+	<div class="wrap">
+        <div class="content-title">
+            Поступающие брони
+        </div>
+        <div class="content-under-title">
+            {{company.name}}
+        </div>
+        <div class="scrollable">
+            <table id="table_current">
+                <tr class="head">
+                  <th>Телефон</th>
+                  <th>Услуга</th>
+                  <th>Время брони</th>
+                  <th>Истечение брони</th>
+                  <th>Статус</th>
+                </tr>
+                {%if not current_timers%}
+                    <tr id="no_book">
+                        <td colspan="5">В данный момент нет броней!</td>
+                    </tr>
+                {%endif%}
+                {%for timer in current_timers%}
+                    <tr id="current{{timer.id}}">
+                        <td>{{timer.user.phone}}</td>
+                        <td>{{timer.service.category.name}}</td>
+                        <td>{{timer.start_time|date:'Y-m-d H:i'}}</td>
+                        <td>{{timer.end_time|date:'Y-m-d H:i'}}</td>
+                        <td>
+                            <button id="accept_{{timer.id}}" class="accept_book" onclick="accept(this)">Принять</button>
+                            <button id="decline_{{timer.id}}" class="decline_book" onclick="decline(this)">Отклонить</button>
+                        </td>
+                    </tr>
+                {%endfor%}
+            </table>
+        </div>
+        
+
+          <div class="content-title" >
+            Принятые
+        </div>
+        <div class="content-under-title">
+            {{company.name}}
+        </div>
+        <div class="scrollable">
+            <table id="table_accepted">
+                <tr class="head">
+                  <th>Телефон</th>
+                  <th>Услуга</th>
+                  <th>Время брони</th>
+                  <th>Статус</th>
+                </tr>
+                {%if not accepted_timers%}
+                    <tr id="empty_tr">
+                        <td colspan="4">Нет принятых броней!</td>
+                    </tr>
+                {%endif%}
+                {%for timer in accepted_timers%}
+                    <tr id="accepted{{timer.id}}">
+                        <td>{{timer.user.phone}}</td>
+                        <td>{{timer.service.category.name}}</td>
+                        <td>{{timer.start_time|date:'Y-m-d H:i'}}</td>
+                        <td class="accepted">Принято</td>
+                    </tr>
+                {%endfor%}
+            </table>
+        </div>
+        
+    </div>
+{% endblock %}
+
+{%block scripts%}
+    <script language="javascript">
+        var ws_url = 'wss://' + window.location.host + '/ws/timers/';
+        var ticksSocket = new WebSocket(ws_url);
+
+        ticksSocket.onmessage = function(event) {
+            var data = JSON.parse(event.data);
+            if({{current_user.company.id}} == data["company_id"]){
+                if(data["decline_book"] != null){
+                    tr = $("#current"+ data["timer_id"]);
+                    tr.remove();
+                    if($("#table_current tr").length == 1){
+                        const empty_tr = document.createElement("tr");
+                        empty_tr.id = "empty_tr";
+                        empty_tr.innerHTML = `<td colspan="5">В данный момент нет броней!</td>`;
+                        document.getElementById('table_current').appendChild(empty_tr);
+                    }
+                }
+                if(data["accept_book"] != null){
+                    current_tr = $("#current"+ data["timer_id"]);
+                    current_tr.remove();
+                    if($("#table_current tr").length == 1){
+                        const empty_tr = document.createElement("tr");
+                        empty_tr.innerHTML = `<td colspan="5">В данный момент нет броней!</td>`;
+                        document.getElementById('table_current').appendChild(empty_tr);
+                    }
+                    const tr = document.createElement('tr');
+                    tr.id = "accepted"+ data["timer_id"];
+                    tr.innerHTML = `
+                    <td>`+data["user"]+`</td>
+                    <td>`+data["service"]+`</td>
+                    <td>`+data["start_time"].slice(0, -3)+`</td>
+                    <td class="accepted">Принято</td>
+                    `;
+                    accepted_table = document.getElementById('table_accepted');
+                    accepted_table.appendChild(tr);
+                    if($("#table_current tr").length == 2){
+                        empty_tr = $("#empty_tr");
+                        empty_tr.remove();
+                    }
+
+                }
+                if(data["new_book"] != null){
+                    if($("#no_book")[0] != null){
+                        empty_tr = $("#no_book");
+                        empty_tr.remove();
+                    }
+                    
+                    const tr = document.createElement('tr');
+                    tr.id = "current"+ data["timer_id"];
+                    tr.innerHTML = `
+                    <td>`+data["timer_user"]+`</td>
+                    <td>`+data["timer_service"]+`</td>
+                    <td>`+data["timer_start"].slice(0, -3)+`</td>
+                    <td>`+data["timer_end"].slice(0, -3)+`</td>
+                    <td>
+                        <button id="accept_`+data["timer_id"]+`" class="accept_book" onclick="accept(this)">Принять</button>
+                        <button id="decline_`+data["timer_id"]+`" class="decline_book" onclick="decline(this)">Отклонить</button>
+                    </td>
+                    `;
+
+                    document.getElementById('table_current').appendChild(tr);
+
+                    
+                }
+                if(data["book_expired"] != null){
+                    tr = $("#current"+data["timer_id"]);
+                    tr2 = $("#accepted"+data["timer_id"]);
+    
+                    tr.remove()
+                    tr2.remove()
+                }
+            }
+           
+            // do whatever required with received data ...
+        };
+        ticksSocket.onerror = function(event) {
+            var data = JSON.parse(event.data);
+            console.log('data', data);
+            
+        };
+    </script>
+    <script language="javascript">
+        function accept(button){
+            var timer_id = parseInt(button.id.split("_")[1])
+            $.ajax({
+                url: "/api/accept_book/", 
+                type: "POST",
+                data: {"timer_id": timer_id}
+            });
+        }
+        function decline(button){
+            var timer_id = parseInt(button.id.split("_")[1])
+            $.ajax({
+                url: "/api/decline_book/", 
+                type: "POST",
+                data: {"timer_id": timer_id}
+            });
+        }
+    </script>
+{%endblock%}
+

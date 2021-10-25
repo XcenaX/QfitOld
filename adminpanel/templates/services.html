@@ -1,0 +1,535 @@
+{% extends "base.html" %}
+{% load static %}
+
+{%block styles %}
+    <link rel="stylesheet" href="{%static 'css/services.css'%}">
+{% endblock %}
+
+{%block services%}active{%endblock%}
+
+{% block content %}
+	
+        <div class="wrap    ">
+            <div class="content-title">
+                Список услуг и графики
+            </div>
+            <div class="content-under-title">
+                {{company.name}}
+            </div>
+            <div class="scrollable-services" id="services">
+                {%for service in services%}
+                    <div class="service-block" id="service{{service.id}}">
+                        <select disabled class="service-title" id="name{{service.id}}">
+                            {%if service.category%}
+                                <option value="{{service.category.id}}">{{service.category.name}}</option>
+                                {%for service_category in service_categories%}
+                                    {%if service_category.id != service.category.id%}
+                                        <option value="{{service_category.id}}">{{service_category.name}}</option>
+                                    {%endif%}
+                                {%endfor%}
+                            {%else%}
+                                <option value="empty">Выберите услугу</option>
+                                {%for service_category in service_categories%}                    
+                                    <option value="{{service_category.id}}">{{service_category.name}}</option>                                    
+                                {%endfor%}
+                            {%endif%}
+                        </select>
+                        
+                        <div role="img" class="trash" id="trash{{service.id}}" onclick="remove({{service.id}})" title="Удалить"></div>
+                        <div role="img" class="edit" id="edit{{service.id}}"  onclick="edit({{service.id}})" title="Редактировать"></div>
+                        <div role="img" class="arrow" id="arrow{{service.id}}" onclick="drop({{service.id}})" title="Показать больше"></div>
+                        <div class="under-block" id="under{{service.id}}">
+                            <div class="schedule-block">
+                                <div class="schedule-title">
+                                    График работы
+                                </div>
+                                {%for schedule in service.days.all|dictsortreversed:"day"%}
+                                    <div class="day-of-week day-block{{service.id}}">
+                                        <div class="day-of-week-up days-service{{service.id}}" id="day-of-week{{service.id}}{{schedule.id}}" onclick="open_edit_block({{service.id}}, {{schedule.id}})">{{schedule.get_cutted_name}}</div>
+                                        <div class="edit-day-block" id="edit-block{{service.id}}{{schedule.id}}">
+                                            <div class="add-timeline-block" onclick="add_timeline({{schedule.id}}, {{service.id}})">
+                                                <div class="add-timeline-title">Добавить</div>
+                                                <div class="add-timeline-button"></div>
+                                            </div>
+                                            
+                                            <table id="timeline{{schedule.id}}" class="timelines timeline{{service.id}}" >
+                                                <tr>
+                                                    <th>Время</th>
+                                                    <th>Кол-во людей</th>
+                                                    <th>Цена</th>
+                                                </tr>
+                                                {%for timeline in schedule.timelines.all%}                                                    
+                                                    {%if timeline.start_time|date:'H:i' != "00:00" and timeline.end_time|date:'H:i' != "00:01"%}
+                                                        <tr id="current_timeline{{timeline.id}}">
+                                                            <td>
+                                                                <div class="delete-timeline" onclick="delete_timeline({{timeline.id}})"></div>
+                                                                <input type="time" disabled placeholder="{{timeline.start_time|date:'H:i'}}" value="{{timeline.start_time|date:'H:i'}}" class="day-of-week-down day{{service.id}}">
+                                                                <span> - </span>
+                                                                <input type="time" disabled placeholder="{{timeline.end_time|date:'H:i'}}" value="{{timeline.end_time|date:'H:i'}}" class="day-of-week-down day{{service.id}}">
+                                                                <input disabled value="{{timeline.id}}" style="position: absolute; visibility: hidden; z-index: -5;">
+                                                            </td>
+                                                            <td>
+                                                                <input type="text" disabled placeholder="{{timeline.limit_people}}" value="{{timeline.limit_people}}" class="day-of-week-down place{{service.id}}">
+                                                            </td>
+                                                            <td>
+                                                                <input type="text" disabled placeholder="{{timeline.price}}" value="{{timeline.price}}" class="day-of-week-down price{{service.id}}">
+                                                            </td>
+                                                        </tr>      
+                                                    {%else%}
+                                                        <script>
+                                                            $(document).ready(function(){
+                                                                delete_timeline({{timeline.id}});
+                                                            });                                                            
+                                                        </script>
+                                                    {%endif%}                                                                                              
+                                                {%endfor%}                                                    
+                                            </table>
+                                            
+                                        </div>
+                                        
+                                        
+                                    </div>
+                                {%endfor%}
+                                
+                            </div>
+    
+                            <div class="schedule-block" style="margin-bottom: 50px;">
+                                <div class="schedule-title" style="padding-top: 33px;">
+                                    Изображения
+                                </div>  
+                                <form action="/api/add-image/" method="POST" id="images{{service.id}}" class="image-form" enctype="multipart/form-data">
+                                    <label for="add-image{{service.id}}" class="add"></label>
+                                    {%for image in service.images.all%}
+                                        <div class="service-image-block" id="image{{image.id}}">
+                                            <img src="{{image.image.url}}"  alt="" class="service-image">
+                                            <div class="image-trash" onclick="delete_image({{image.id}})"></div>
+                                        </div>                                        
+                                    {%endfor%}
+                                    
+                                    <input type="file" id="add-image{{service.id}}" name="image" onchange="add_image(this, {{service.id}})" class="add-input">
+                                    <input type="text" name="service" value="{{service.id}}" style="visibility: hidden; position: absolute;z-index: -10;">
+                                    
+                                </form>      
+                                
+                            </div>
+
+                            <div class="schedule-block">
+                                <div class="schedule-title">
+                                    Описание
+                                </div>                                
+                                <textarea rows="7"  maxlength="200" class="description" id="description{{service.id}}" disabled placeholder="{{service.description}}" value="{{service.description}}"></textarea>                                
+                            </div>
+
+                            
+                        </div>
+                    </div>
+                {%endfor%}
+            </div>
+            <button class="add-button" onclick="add_service()">Добавить</button>
+        </div>
+    
+    
+{% endblock %}
+
+{%block scripts%}
+    <script language="javascript">
+        
+        function drop(id){
+            arrow = $("#arrow"+id)[0];
+            if(arrow.style.backgroundImage == "" || arrow.style.backgroundImage == 'url("/static/img/down-arrow.svg")'){
+                arrow.style.backgroundImage = 'url("/static/img/up-arrow.svg")';
+                $("#under"+id)[0].style.display = "block";
+                $("#service"+id)[0].style.height = "610px";    
+            } else{
+                arrow.style.backgroundImage = 'url("/static/img/down-arrow.svg")';
+                $("#under"+id)[0].style.display = "none";
+                $("#service"+id)[0].style.height = "70px";
+            }
+            
+        }
+
+        function get_day_of_week(number){
+            if(number == 6)return 0;
+            if(number == 5)return 1;
+            if(number == 4)return 2;
+            if(number == 3)return 3;
+            if(number == 2)return 4;
+            if(number == 1)return 5;
+            if(number == 0)return 6;
+        }
+
+        function edit(id){
+            blocks = $(".day-of-week-down.day"+id);
+            places = $(".place"+id);
+            service_name = $("#name"+id)[0];
+            prices = $(".price"+id);
+            description = $("#description"+id)[0];
+            edit_button = $("#edit"+id)[0];
+            days_blocks = $(".days-service"+id);
+            if(description.disabled == true){
+                edit_button.style.backgroundImage = 'url("/static/img/save.svg")';
+                edit_button.title = "Сохранить";
+                for(var i = 0; i < blocks.length; i++){
+                    blocks[i].disabled = false;   
+                }    
+                for(var i = 0; i < places.length; i++){
+                    places[i].disabled = false;
+                }
+                for(var i = 0; i < prices.length; i++){
+                    prices[i].disabled = false;
+                }
+                service_name.disabled=false;
+                description.disabled=false;        
+                for(var i = 0; i < days_blocks.length; i++){
+                    days_blocks[i].style.border = "border-bottom: 1px solid gray;";
+                }
+            } else{
+                
+                timelines = $(".timeline"+id);
+                
+                all_schedules = [];
+                for(var i = 0; i < timelines.length; i++){
+                    all_timelines = [];
+                    for(var j = 1; j < timelines[i].children[0].children.length; j++){
+                        console.log(timelines[i].children[0].children[j].tagName);
+                        if(timelines[i].children[0].children[j].tagName == "SCRIPT"){
+                            continue;
+                        }
+                        
+                        start_time = timelines[i].children[0].children[j].children[0].children[1].value;
+                        end_time = timelines[i].children[0].children[j].children[0].children[3].value;
+                        timeline_id = timelines[i].children[0].children[j].children[0].children[4].value;
+                        limit = timelines[i].children[0].children[j].children[1].children[0].value;
+                        price = timelines[i].children[0].children[j].children[2].children[0].value;
+                        all_timelines.push({
+                            "start_time": start_time,
+                            "end_time": end_time,
+                            "limit_people": parseInt(limit),
+                            "price": parseInt(price),
+                            "id": parseInt(timeline_id),
+                        })
+                    }
+                    day_of_week = get_day_of_week(i);
+                    all_schedules.push({
+                        "timelines": all_timelines,
+                        "day": day_of_week,
+                    })
+                }
+                console.log(service_name.value);
+                token = get_token();
+                $.ajax({
+                    url: "/api/update_schedules/", 
+                    type: "POST",
+                    data: {"schedules":JSON.stringify(all_schedules), "service": id, "category": service_name.value, "description": description.value},
+                    headers: {"Authorization": "Token "+token},
+                    success: function(data){
+                        if(data["error"]){
+                            alertify.error(data["error"], 5);
+                        }else{
+                            edit_button.style.backgroundImage = 'url("/static/img/draw.svg")';
+                            edit_button.title = "Редактировать";
+                            for(var i = 0; i < blocks.length; i++){
+                                blocks[i].disabled = true;  
+                            }    
+                            for(var i = 0; i < places.length; i++){
+                                places[i].disabled = true; 
+                            }
+                            for(var i = 0; i < prices.length; i++){
+                                prices[i].disabled = true; 
+                            }
+                            for(var i = 0; i < days_blocks.length; i++){
+                                days_blocks[i].style.border = "none";
+                            }
+                            service_name.disabled=true;
+                            description.disabled=true;
+                            alertify.success("Изменения сохранены!", 4);
+                        }
+                    }
+                });
+
+                
+            } 
+            
+        }
+
+        function remove(id){
+            token = get_token();
+            $.ajax({
+                url: "/api/services/"+id+"/", 
+                type: "DELETE",
+                headers: {"Authorization": "Token "+token},
+                success: function(data){
+                    service_block = $("#service"+id)[0];
+                    service_block.remove();
+                    alertify.success("Услуга удалена!", 4);
+                }
+            });
+        }
+        token = get_token();
+        function add_service(){
+            $.ajax({
+                url: "/api/services/", 
+                type: "POST",
+                headers: {"Authorization": "Token "+token},
+                data: {
+                    "description": "Описание",
+                },
+                success: function(data){
+                    console.log(data);
+                    days = data["days"];
+
+                    days_block = ``;
+                    places = ``;
+                    service_categories = ``;
+                    
+                    for(var i = days.length-1; i >= 0; i--){
+                        
+                        days_block += `
+                        <div class="day-of-week day-block`+data["id"]+`">
+                            <div class="day-of-week-up days-service`+data["id"]+`" id="day-of-week`+data["id"]+``+days[i]["id"]+`" onclick="open_edit_block(`+data["id"]+`, `+days[i]["id"]+`)">`+days[i].get_cutted_name+`</div>
+                            <div class="edit-day-block" id="edit-block`+data["id"]+``+days[i]["id"]+`">
+                                <div class="add-timeline-block" onclick="add_timeline(`+days[i]["id"]+`, `+data["id"]+`)">
+                                    <div class="add-timeline-title">Добавить</div>
+                                    <div class="add-timeline-button"></div>
+                                </div>    
+                                <table id="timeline`+days[i]["id"]+`" class="timelines timeline`+data["id"]+`" >
+                                    <tr>
+                                        <th>Время</th>
+                                        <th>Кол-во людей</th>
+                                        <th>Цена</th>
+                                    </tr>
+                                                                                      
+                                </table>                            
+                            </div>                                                                                
+                        </div>
+
+                        `;
+                    }
+
+                    
+
+                    const service_block = document.createElement("div");
+                    service_block.classList.add("service-block");
+                    service_block.id = "service"+data["id"];
+                    service_block.innerHTML = `
+                        
+                        <select disabled class="service-title" id="name`+data["id"]+`">
+                            {%if service.company%}
+                                <option value="{{service.category.id}}">{{service.category.name}}</option>
+                                {%for service_category in service_categories%}
+                                    {%if service_category.id != service.category.id%}
+                                        <option value="{{service_category.id}}">{{service_category.name}}</option>
+                                    {%endif%}
+                                {%endfor%}
+                            {%else%}
+                                <option value="empty">Выберите услугу</option>
+                                {%for service_category in service_categories%}                    
+                                    <option value="{{service_category.id}}">{{service_category.name}}</option>                                    
+                                {%endfor%}
+                            {%endif%}
+                        </select>
+                        <div role="img" class="trash" id="trash`+data["id"]+`" onclick="remove(`+data["id"]+`)" title="Удалить"></div>
+                        <div role="img" class="edit" id="edit`+data["id"]+`"  onclick="edit(`+data["id"]+`)" title="Редактировать"></div>
+                        <div role="img" class="arrow" id="arrow`+data["id"]+`" onclick="drop(`+data["id"]+`)" title="Показать больше"></div>
+                        <div class="under-block" id="under`+data["id"]+`">
+                            <div class="schedule-block">
+                                <div class="schedule-title">
+                                    График работы
+                                </div>
+                                `+days_block+`                                
+                            </div>
+    
+                            <div class="schedule-block" style="margin-bottom: 50px;">
+                                <div class="schedule-title">
+                                    Изображения
+                                </div>  
+                                <form action="/api/add-image/" method="POST" id="images`+data["id"]+`" class="image-form" enctype="multipart/form-data">
+                                    <label for="add-image`+data["id"]+`" class="add"></label>
+                                                                        
+                                    <input type="file" id="add-image`+data["id"]+`" name="image" onchange="add_image(this, `+data["id"]+`)" class="add-input">
+                                    <input type="text" name="service" value="`+data["id"]+`" style="visibility: hidden; position: absolute;z-index: -10;">                                    
+                                </form>                                      
+                            </div>
+
+                            <div class="schedule-block">
+                                <div class="schedule-title">
+                                    Описание
+                                </div>                                
+                                <textarea rows="7"  maxlength="200" class="description" id="description`+data["id"]+`" disabled placeholder="`+data["description"]+`" value="`+data["description"]+`"></textarea>                                
+                            </div>                            
+                        </div>
+                    `;
+                    token = get_token();
+                    $.ajax({
+                        url: "/api/add_service/", 
+                        type: "POST",
+                        data: {"service": data["id"]},
+                        headers: {"Authorization": "Token "+token},
+                        success: function(data){
+                            alertify.success("Услуга добавлена!", 4);
+                        }
+                    });
+                    services = document.getElementById("services");
+                    services.appendChild(service_block);
+                    
+                    
+                }
+            });
+            
+        }
+
+        function add_image(input, service){
+            $('#images'+service).submit(function(e){
+                e.preventDefault();
+                var formData = new FormData(this);
+                token = get_token();
+                $.ajax({
+                    url: "/api/add_image/", 
+                    type: "POST",
+                    data: formData,
+                    headers: {"Authorization": "Token "+token},
+                    success: function(data){
+                        console.log(data);
+                        if(data["error"]){
+                            alertify.error(data["error"], 5);
+                        }else{
+                            const div = document.createElement("div");
+                            div.classList.add("service-image-block");
+                            div.id= "image"+data["id"];
+                            div.innerHTML = `
+                                <img src="`+data["image"]+`"  alt="" class="service-image">
+                                <div class="image-trash" onclick="delete_image(`+data["id"]+`)"></div>
+                            `;
+                            images_form = document.getElementById('images'+service);
+                            images_form.insertBefore(div, images_form.children[images_form.children.length-1]);
+                            
+                            alertify.success("Изображение добавлено!", 4);
+                        }
+                    },
+                    cache: false,
+                    contentType: false,
+                    processData: false,
+                    
+                });
+            });
+            $('#images'+service).submit();
+        }
+
+        function delete_image(image, service){
+            token = get_token();
+            $.ajax({
+                url: "/api/images/"+image+"/", 
+                type: "DELETE",
+                headers: {"Authorization": "Token "+token},
+                success: function(data){
+                    image = $("#image"+image)[0];
+                    image.remove();
+                    
+                    alertify.success("Изображение удалено!", 4);
+                },
+            });
+
+        }
+    //237px
+        function close_all_blocks(){
+            days = $(".day-of-week-up");
+            blocks = $(".edit-day-block");
+            for(var i = 0; i < days.length; i++){
+                days[i].style.backgroundColor = "white";
+                days[i].style.color = "black";
+                blocks[i].style.display = "none";
+            }
+        }
+
+        function open_edit_block(service, schedule){
+            day_of_week = $("#day-of-week"+service+schedule)[0];
+            edit_block = $("#edit-block"+service+schedule)[0];
+            description = $("#description"+service)[0];
+            table = $(".timelines");
+            add_block = $(".add-timeline-block");
+            if(description.disabled == true){
+                return;
+            }
+            if(day_of_week.style.backgroundColor != "white" && day_of_week.style.backgroundColor != ""){
+                day_of_week.style.backgroundColor = "white";
+                day_of_week.style.color = "black";
+                edit_block.style.display = "none";
+                
+            }else{
+                window.onclick = function(event) {
+                    if(!event.path.includes(edit_block) && event.target != day_of_week){
+                        close_all_blocks();
+                    }
+                    // if (event.target != edit_block && event.target != day_of_week && event.target != table && event.target != add_block) {
+                        
+                    // }
+                }
+                close_all_blocks();
+                
+                day_of_week.style.backgroundColor = "#570499";
+                day_of_week.style.color = "white";
+                edit_block.style.display = "block"; 
+                
+            }
+            
+        }
+
+        function add_timeline(schedule, service){
+            token = get_token();
+            $.ajax({
+                url: "/api/add_timeline/", 
+                type: "POST",
+                headers: {"Authorization": "Token "+token},
+                data: {
+                    "schedule": schedule
+                },
+                success: function(data){
+                    console.log(data);
+                    const timeline_block = document.createElement("tr");
+                    timeline_block.id = "current_timeline"+data["id"];
+                    timeline_block.innerHTML = `
+                    <td>
+                        <div class="delete-timeline" onclick="delete_timeline(`+data["id"]+`)"></div>
+                        <input type="time" placeholder="`+data["start_time"]+`" value="`+data["start_time"]+`" class="day-of-week-down day`+service+`">
+                        <span> - </span>
+                        <input type="time" placeholder="`+data["end_time"]+`" value="`+data["end_time"]+`" class="day-of-week-down day`+service+`">
+                        <input disabled value="`+data["id"]+`" style="position: absolute; visibility: hidden; z-index: -5;">
+                    </td>
+                    <td>
+                        <input type="text" placeholder="`+data["limit_people"]+`" value="`+data["limit_people"]+`" class="day-of-week-down place`+service+`">
+                    </td>
+                    <td>
+                        <input type="text" placeholder="`+data["price"]+`" value="`+data["price"]+`" class="day-of-week-down price`+service+`">
+                    </td>
+                    `;
+                    document.getElementById("timeline"+schedule).children[0].appendChild(timeline_block);
+
+                }
+            });
+        }
+
+        function delete_timeline(timeline){
+            token = get_token();
+            console.log(token);
+            $.ajax({
+                url: "/api/timelines/"+timeline+"/", 
+                type: "DELETE",
+                headers: {"Authorization": "Token "+token},
+                success: function(data){
+                    current_timeline = $("#current_timeline"+timeline);
+                    current_timeline.remove();
+                }
+            });
+        }
+
+        // $('html').click(function() {
+        //     close_all_blocks();
+        // })
+        
+        
+
+    </script>
+
+    
+{%endblock%}
+

@@ -1,0 +1,49 @@
+{%load static%}
+<form action="/api/book_time/" method="POST">
+    <input type="text" placeholder="Id компании" name="company_id" value="1">
+    <input type="text" placeholder="ID пользователя" name="user_id" value="2">
+    <input type="text" placeholder="ID услуги" name="service_id" value="2">
+    <input type="text" placeholder="Пароль пользователя" name="password" value="12345">
+    <input type="datetime" placeholder="Время на которое нужно забронировать" name="book_time">
+    <button type="submit">TEST бронь</button>
+</form>
+
+<form action="/api/confirm_book/" method="POST">
+    <input type="text" placeholder="Id компании" name="company_id" value="1">
+    <input type="text" placeholder="ID пользователя" name="user_id" value="2">
+    <input type="text" placeholder="ID услуги" name="service_id" value="2">
+    <input type="text" placeholder="Пароль пользователя" name="password" value="12345">
+    <input type="datetime" placeholder="Текущее время" name="current_time">
+    <button type="submit">TEST начать тренировку</button>
+</form>
+
+<form action="/api/end_train/" method="POST">
+    <input type="text" placeholder="Id компании" name="company_id" value="1">
+    <input type="text" placeholder="ID пользователя" name="user_id" value="2">
+    <input type="text" placeholder="Текущее время" name="end_time" value="10:25">
+    <button type="submit">TEST окончить тренировку</button>
+</form>
+
+<form action="/api/accept_book/" method="POST">
+    <input type="text" name="timer_id" placeholder="ID Брони" value="1">
+    <button type="submit">TEST подтвердить бронь (у клубов в админке)</button>
+</form>
+
+<form action="/api/submit_form/" method="POST" enctype="multipart/form-data">
+    <input type="text" name="club_name" placeholder="Имя клуба" value="">
+    <input type="text" name="description" placeholder="Описание" value="">
+    <input type="text" name="city" placeholder="Город" value="">
+    
+    <input type="radio" name="has_optional_services" value="Да" class="radio-box" id="radio-box-1" /><label for="radio-box-1"><a class="button-input">Да</a></label>
+    <input type="radio" name="has_optional_services" value="Нет" class="radio-box" id="radio-box-2" /><label for="radio-box-2"><a class="button-input">Нет</a></label>
+    <input type="text" name="optional_services" placeholder="Услуги" value="">
+    <input type="text" name="phone" placeholder="телефон" value="">
+    <input type="text" name="email" placeholder="Почта" value="">
+    <button type="submit">Сохранить форму</button>
+</form>
+
+<form action="/api/get_minutes/" method="POST">
+    <input type="text" name="timer_id" placeholder="ID Брони" value="1">
+    <input type="text" name="current_time" placeholder="ID Брони" value="29.03.2021 21:23">
+    <button type="submit">Кол-о минут</button>
+</form>

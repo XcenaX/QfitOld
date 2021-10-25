@@ -1,0 +1,33 @@
+.accept_book, .decline_book, .accept_book:focus, .decline_book:focus{
+    color: white;
+    box-shadow: 0px 3px 3px rgb(0 0 0 / 12%);
+    border-radius: 17px;
+    border: none;
+    padding: 5px;
+    width: 45%;
+    font-family: Montserrat;
+    font-style: normal;
+    font-weight: 600;
+    font-size: 18px;
+    line-height: 22px;
+    height: 38px;
+    outline: none;
+}
+
+.decline_book{
+    background-color: #F44848;
+}
+
+.accept_book{
+    background-color: #A0CF3C;
+}
+
+.accepted{
+    background-color: #A0CF3C;
+    color: white;
+    font-family: Montserrat;
+    font-style: normal;
+    font-weight: 600;
+    font-size: 18px;
+    line-height: 22px;
+}
